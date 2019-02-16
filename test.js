@@ -1,22 +1,33 @@
 'use strict';
 
-const { Interval, } = require('./Time.js');
+const {
+	Interval,
+} = require('./Time.js');
 
-(tests => tests.forEach(
-	([args, expectation]) => {
-		(
-			args.length === 1 && args[0] instanceof Interval
-			? args[0]
-			: new Interval(...args)
-		).length === expectation
-		? void 0
-		: console.error(
-			'Input: ', args, '\n',
-			'Expected output: ', expectation, '\n',
-			'Actual output: ', new Interval(...args).length
-		);
+(tests => {
+	let error_count = 0;
+	tests.forEach(
+		([args, expectation]) => {
+			if(!(
+				(
+					args.length === 1 && args[0] instanceof Interval
+					? args[0]
+					: new Interval(...args)
+				).length === expectation
+			)) {
+				++error_count;
+				console.error(
+					'Input: ', args, '\n',
+					'Expected output: ', expectation, '\n',
+					'Actual output: ', new Interval(...args).length
+				);
+			}
+		}
+	);
+	if(error_count === 0) {
+		console.log('All passed');
 	}
-))([
+})([
 	[[], 0],
 	[[NaN], 0],
 	[[100], 100],

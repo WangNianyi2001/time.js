@@ -2,7 +2,7 @@
 
 const {
 	Interval,
-} = require('./Time.js');
+} = require('./Time');
 
 (tests => {
 	let error_count = 0;

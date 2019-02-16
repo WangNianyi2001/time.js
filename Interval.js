@@ -3,7 +3,7 @@
 
 	const {
 		give,
-	} = require('./Library.js');
+	} = require('./Library');
 
 	const Interval = function Interval() {
 		switch(arguments.length) {

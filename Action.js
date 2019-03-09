@@ -20,12 +20,12 @@
 			'restart',
 			'stop',
 			'pause',
-			'continue',
+			'resume',
 		]),
 	})(ActionEvent);
 
-	const Action = function Action(length, events) {
-		this.length = new Interval(length);
+	const Action = function Action(duration, events) {
+		this.duration = new Interval(duration);
 		this.events = new ActionEvent(events);
 		this.progress = 0;
 		this.timer = null;
@@ -42,7 +42,7 @@
 			this.timer = setTimeout(() => {
 				this.stop();
 				this.callEvent('finish');
-			}, this.length.length - this.progress);
+			}, this.duration.duration - this.progress);
 			this.callEvent('start');
 		},
 		stop() {
@@ -60,14 +60,14 @@
 			this.progress = getTimestamp() - this.timestamp;
 			this.callEvent('pause');
 		},
-		continue() {
+		resume() {
 			this.timestamp = getTimestamp();
 			this.timer = setTimeout(() => {
 				this.callEvent('finish');
-			}, this.length.length - this.progress);
-			this.callEvent('continue');
+			}, this.duration.duration - this.progress);
+			this.callEvent('resume');
 		},
 	})(Action.prototype);
 
-	module.exports = Action;
+	module.exports = { Action, ActionEvent };
 }

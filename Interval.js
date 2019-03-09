@@ -8,25 +8,25 @@
 	const Interval = function Interval() {
 		switch(arguments.length) {
 			case 0: {
-				this.length = 0;
+				this.duration = 0;
 				break;
 			}
 			case 1: {
 				switch(true) {
 					case typeof arguments[0] === 'string': {
-						const [, length, unit] = arguments[0].match(
+						const [, duration, unit] = arguments[0].match(
 							/^\s*(\d*(?:\.\d+)?)\s*([^\d.]*\S*)\s*$/
 						) || [];
 						const multiply = Interval.units[unit] || +unit || 1;
-						this.length = multiply * +length;
+						this.duration = multiply * +duration;
 						break;
 					}
 					case arguments[0] instanceof Interval: {
-						this.length = arguments[0].length;
+						this.duration = arguments[0].duration;
 						break;
 					}
 					default: {
-						this.length = Math.abs(arguments[0]) || 0;
+						this.duration = Math.abs(arguments[0]) || 0;
 						break;
 					}
 				}
@@ -34,7 +34,7 @@
 			}
 			case 2: {
 				const multiply = Interval.units[arguments[1]] || +arguments[1];
-				this.length = multiply * +arguments[0];
+				this.duration = multiply * +arguments[0];
 			}
 		}
 	};
@@ -47,17 +47,17 @@
 			if(!(interval instanceof Interval)) {
 				return this.extend(new Interval(...arguments));
 			}
-			this.length += interval.length;
+			this.duration += interval.duration;
 			return this;
 		},
 		shorten(interval) {
 			if(!(interval instanceof Interval)) {
 				return this.shorten(new Interval(...arguments));
 			}
-			if(interval.length < this.length) {
-				this.length -= interval.length;
+			if(interval.duration < this.duration) {
+				this.duration -= interval.duration;
 			} else {
-				this.length = 0;
+				this.duration = 0;
 			}
 			return this;
 		},
@@ -70,7 +70,7 @@
 			if(!multiply && isNaN(multiply)) {
 				multiply = 1;
 			}
-			this.length *= multiply;
+			this.duration *= multiply;
 			return this;
 		},
 	})(Interval.prototype);

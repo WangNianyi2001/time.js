@@ -3,7 +3,7 @@
 
 	const Time = {
 		Interval: require('./Interval'),
-		Task: require('./Task'),
+		Action: require('./Action'),
 	};
 
 	module.exports = Time;

@@ -8,8 +8,8 @@
 	} = require('./Library'),
 	Interval = require('./Interval');
 
-	const TaskEvent = function(events = []) {
-		TaskEvent.event_names.forEach(
+	const ActionEvent = function(events = []) {
+		ActionEvent.event_names.forEach(
 			name => this[name] = (fn => fn instanceof Function ? fn : nulf)(events[name])
 		);
 	};
@@ -22,11 +22,11 @@
 			'pause',
 			'continue',
 		]),
-	})(TaskEvent);
+	})(ActionEvent);
 
-	const Task = function Task(length, events) {
+	const Action = function Action(length, events) {
 		this.length = new Interval(length);
-		this.events = new TaskEvent(events);
+		this.events = new ActionEvent(events);
 		this.progress = 0;
 		this.timer = null;
 		this.timestamp = null;
@@ -67,7 +67,7 @@
 			}, this.length.length - this.progress);
 			this.callEvent('continue');
 		},
-	})(Task.prototype);
+	})(Action.prototype);
 
-	module.exports = Task;
+	module.exports = Action;
 }

@@ -75,8 +75,5 @@
 		},
 	})(Interval.prototype);
 
-	const Task = function Task() {
-	};
-
 	module.exports = Interval;
 }

@@ -17,6 +17,7 @@
 		event_names: new Set([
 			'start',
 			'finish',
+			'restart',
 			'stop',
 			'pause',
 			'continue',
@@ -48,6 +49,11 @@
 			clearTimeout(this.timer);
 			this.progress += getTimestamp() - this.timestamp;
 			this.callEvent('stop');
+		},
+		restart() {
+			this.stop();
+			this.callEvent('restart');
+			this.start();
 		},
 		pause() {
 			clearTimeout(this.timer);

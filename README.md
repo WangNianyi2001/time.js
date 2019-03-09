@@ -47,7 +47,7 @@ There are 6 types of events supported by `Time.js`, here is a list of them:
 
 Here are a few pitfalls to notice:
 
-- `start` will not trigger if you resumed an action at its beginning, so will `finish` at the end.
+- `start` will not trigger if you resumed an action at its beginning, neither will `finish` at the end.
 - `resume` will not trigger when `.start()` is called, this happens similarly on `pause` and `stop()`.
 - The correct trigger sequence of restarting is `stop`-`restart`-`start`.
 
@@ -61,4 +61,4 @@ You know what, the original movitivation of this project is actually me wanting 
 
 More possibilities like parallel/decorative timelines would be considered, since there are a lot of sound effects or decorative tracks appeared in songs, which will probably conflict with the main lyrics/melody.
 
-If you have any ideas for this project, please create a new issue in order for me to know!
+If you have any ideas or are willing to contribute, please let me know via email or issues.

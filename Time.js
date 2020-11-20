@@ -1,48 +1,31 @@
 {
 	'use strict';
 
-	const give = properties => object => Object.keys(properties).forEach(
-		key => Object.defineProperty(object, key, Object.getOwnPropertyDescriptor(properties, key))
-	);
-
 	const Interval = function Interval() {
+		this.duration = null;
 		switch(arguments.length) {
 			case 0: {
 				this.duration = 0;
 				break;
 			}
 			case 1: {
-				switch(true) {
-					case typeof arguments[0] === 'string': {
-						const [, duration, unit] = arguments[0].match(
-							/^\s*(\d*(?:\.\d+)?)\s*([^\d.]*\S*)\s*$/
-						) || [];
-						const multiply = Interval.units[unit] || +unit || 1;
-						this.duration = multiply * +duration;
-						break;
-					}
-					case arguments[0] instanceof Interval: {
-						this.duration = arguments[0].duration;
-						break;
-					}
-					default: {
-						this.duration = Math.abs(arguments[0]) || 0;
-						break;
-					}
-				}
+				if(arguments[0] instanceof Interval)
+					this.duration = arguments[0].duration;
+				else if(typeof arguments[0] === 'string')
+					this.duration = arguments[0].duration;
+				else
+					this.duration = Math.abs(arguments[0]) || 0;
 				break;
 			}
 			case 2: {
-				const multiply = Interval.units[arguments[1]] || +arguments[1];
-				this.duration = multiply * +arguments[0];
+				const unit_scalar = Interval.units.get(arguments[1]) || +arguments[1];
+				this.duration = unit_scalar * +arguments[0];
+				break;
 			}
 		}
 	};
-	Interval.units = {
-		ms: 1,
-		s: 1000,
-	};
-	give({
+	Interval.units = new Map([['ms', 1], ['s', 1000]]);
+	Interval.prototype = {
 		extend(interval) {
 			if(!(interval instanceof Interval)) {
 				return this.extend(new Interval(...arguments));
@@ -61,83 +44,98 @@
 			}
 			return this;
 		},
-		stretch(multiply) {
-			if(typeof multiply === 'string') {
-				multiply = multiply.test(/%\s*$/)
-				? 100 * +multiply.match(/^(.*)%\s*$/)[1]
-				: +multiply;
+		stretch(scalar) {
+			if(typeof scalar === 'string') {
+				scalar = scalar.test(/%\s*$/)
+				? 100 * +scalar.match(/^(.*)%\s*$/)[1]
+				: +scalar;
 			}
-			if(!multiply && isNaN(multiply)) {
-				multiply = 1;
+			if(!scalar && isNaN(scalar)) {
+				scalar = 1;
 			}
-			this.duration *= multiply;
+			this.duration *= scalar;
 			return this;
 		},
-	})(Interval.prototype);
+	};
 
 	const nulf = () => {};
 	const getTimestamp = () => +new Date;
 
-	const ActionEvent = function(events = []) {
-		ActionEvent.event_names.forEach(
-			name => this[name] = (fn => fn instanceof Function ? fn : nulf)(events[name])
-		);
+	const Action = function Action(...duration) {
+		this._duration = new Interval(...duration);
+		this._events = new Map(Array.from(Action.event_types).map(type => [type, new Set()]));
+		this._playing = false;
+		this._last_stopping_progress = 0;
+		this._timer_id = null;
+		this._last_starting_timestamp = null;
 	};
-	give({
-		event_names: new Set([
-			'start',
-			'finish',
-			'restart',
-			'stop',
-			'pause',
-			'resume',
-		]),
-	})(ActionEvent);
+	Action.event_types = new Set('start,finish,restart,stop,pause,resume'.split(','));
 
-	const Action = function Action(duration, events) {
-		this.duration = new Interval(duration);
-		this.events = new ActionEvent(events);
-		this.progress = 0;
-		this.timer = null;
-		this.timestamp = null;
-	};
-
-	give({
-		callEvent(name, ...args) {
-			this.events[name].apply(this, args);
+	Action.prototype = {
+		bindEvent(type, callback) {
+			this._events.get(type).add(callback);
 		},
+		unbindEvent(type, callback) {
+			this.events.get(type).delete(callback);
+		},
+		flushEvent(type) {
+			if(!type) {
+				for(const type of Action.event_types.values())
+					this.flushEvent(type);
+				return;
+			}
+			this.events.get(type).clear();
+		},
+		triggerEvent(type, ...args) {
+			for(const event of this._events.get(type))
+				event.apply(this, args);
+		},
+		get playing() { return this._playing; },
+		get progress() {
+			return this._last_stopping_progress + (this.playing ? getTimestamp() - this._last_starting_timestamp : 0);
+		},
+		get duration() { return this._duration.duration; },
 		start() {
-			this.progress = 0;
-			this.timestamp = getTimestamp();
-			this.timer = setTimeout(() => {
+			this._playing = true;
+			this._last_stopping_progress = 0;
+			this._last_starting_timestamp = getTimestamp();
+			this._timer_id = setTimeout(() => {
 				this.stop();
-				this.callEvent('finish');
-			}, this.duration.duration - this.progress);
-			this.callEvent('start');
+				this.triggerEvent('finish');
+			}, this.duration - this._last_stopping_progress);
+			this.triggerEvent('start');
 		},
 		stop() {
-			clearTimeout(this.timer);
-			this.progress += getTimestamp() - this.timestamp;
-			this.callEvent('stop');
+			this._playing = false;
+			clearTimeout(this._timer_id);
+			this._last_stopping_progress += this.progress;
+			this.triggerEvent('stop');
 		},
 		restart() {
 			this.stop();
-			this.callEvent('restart');
+			this.triggerEvent('restart');
 			this.start();
 		},
 		pause() {
-			clearTimeout(this.timer);
-			this.progress = getTimestamp() - this.timestamp;
-			this.callEvent('pause');
+			if(this._playing) {
+				this._last_stopping_progress = this.progress;
+				this._playing = false;
+				clearTimeout(this._timer_id);
+			}
+			this.triggerEvent('pause');
 		},
 		resume() {
-			this.timestamp = getTimestamp();
-			this.timer = setTimeout(() => {
-				this.callEvent('finish');
-			}, this.duration.duration - this.progress);
-			this.callEvent('resume');
+			if(!this._playing) {
+				this._playing = true;
+				this._last_starting_timestamp = getTimestamp();
+				this._timer_id = setTimeout(
+					Action.prototype.triggerEvent.bind(this, 'finish'),
+					this.duration - this.progress
+				);
+			}
+			this.triggerEvent('resume');
 		},
-	})(Action.prototype);
+	};
 
 	window.Time = { Interval, Action };
 }

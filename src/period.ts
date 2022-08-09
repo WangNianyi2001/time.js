@@ -1,4 +1,4 @@
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 import Interval from "./interval";
 
 const getTimestamp = () => +new Date;

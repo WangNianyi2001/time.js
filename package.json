@@ -1,0 +1,23 @@
+{
+	"name": "time.js",
+	"type": "module",
+	"version": "0.0.1",
+	"description": "",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/WangNianyi2001/time.js.git"
+	},
+	"author": "Nianyi Wang",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/WangNianyi2001/time.js/issues"
+	},
+	"homepage": "https://github.com/WangNianyi2001/time.js#readme",
+	"devDependencies": {
+		"typescript": "^4.7.4"
+	},
+	"dependencies": {
+		"@types/events": "^3.0.0",
+		"events": "^3.3.0"
+	}
+}

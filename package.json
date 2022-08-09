@@ -3,7 +3,6 @@
 	"type": "module",
 	"version": "0.0.1",
 	"description": "",
-	"main": "time.js",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/WangNianyi2001/time.js.git"
@@ -16,5 +15,8 @@
 	"homepage": "https://github.com/WangNianyi2001/time.js#readme",
 	"devDependencies": {
 		"typescript": "^4.7.4"
+	},
+	"dependencies": {
+		"events": "^3.3.0"
 	}
 }

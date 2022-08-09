@@ -1,4 +1,4 @@
-export class Interval {
+export default class Interval {
 	static pattern: RegExp = /^((?:[1-9]\d*|0)(?:\.\d+)?)([a-zA-Z]*)$/;
 	static units = new Map([
 		['ms', 1],
@@ -22,13 +22,13 @@ export class Interval {
 				this.duration = duration.duration;
 			} else if(typeof duration === 'number') {
 				this.duration = Math.max(duration, 0);
-			} else {
-				// duration is string
+			} else if(typeof duration === 'string') {
 				const match = duration.match(Interval.pattern);
 				if(!match)
 					throw new SyntaxError('Invalid duration format');
 				this.#Init(+match[1], match[2]);
-			}
+			} else
+				throw new TypeError('Unsupported interval initialization argument format');
 		} else
 			this.#Init(+duration, unit);
 	}
